@@ -245,6 +245,32 @@ h1,h2,h3,h4,h5,.tab-btn,button.btn-add,button.btn-sm,.section-title,.week-btn,.v
  
 @media(max-width:900px){.dgrid{grid-template-columns:repeat(2,1fr)}.kboard{grid-template-columns:1fr}}
 @media(max-width:600px){.dgrid{grid-template-columns:1fr}.content{padding:12px}.hdr{padding:0 12px}}
+
+/* POMODORO */
+.pom-wrap{display:flex;flex-direction:column;align-items:center;gap:22px;padding:20px 0}
+.pom-modes{display:flex;gap:8px;flex-wrap:wrap;justify-content:center}
+.pom-mode{font-family:'Outfit',sans-serif;font-size:12px;font-weight:700;padding:6px 18px;border-radius:20px;border:1.5px solid var(--border);background:var(--surface);cursor:pointer;color:var(--muted);transition:all .2s}
+.pom-mode.active{color:#fff;border-color:transparent}
+.pm-focus.active{background:#E84393}.pm-short.active{background:#059669}.pm-long.active{background:#0891B2}
+.pom-ring-wrap{position:relative;width:220px;height:220px}
+.pom-ring-wrap svg{transform:rotate(-90deg)}
+.pom-time{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px}
+.pom-digits{font-family:'Outfit',sans-serif;font-size:52px;font-weight:900;line-height:1;letter-spacing:-2px}
+.pom-lbl{font-size:10.5px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.6px}
+.pom-btns{display:flex;gap:10px}
+.pom-start{font-family:'Outfit',sans-serif;font-size:13.5px;font-weight:800;padding:10px 34px;border-radius:10px;border:none;background:var(--accent);color:#fff;cursor:pointer;transition:all .2s}
+.pom-start:hover{background:var(--ach);transform:translateY(-1px)}
+.pom-reset{font-family:'Outfit',sans-serif;font-size:12px;font-weight:700;padding:10px 18px;border-radius:10px;border:1.5px solid var(--border);background:var(--surface);color:var(--muted);cursor:pointer;transition:all .2s}
+.pom-reset:hover{border-color:var(--accent);color:var(--accent)}
+.pom-stats{display:flex;gap:10px;flex-wrap:wrap;justify-content:center}
+.pom-sc{background:var(--surface);border:1px solid var(--border);border-radius:var(--r);padding:10px 22px;text-align:center}
+.pom-sv{font-family:'Outfit',sans-serif;font-size:26px;font-weight:900;line-height:1}
+.pom-sl{font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:.4px;margin-top:3px}
+.pom-cfg{display:flex;gap:14px;align-items:center;flex-wrap:wrap;justify-content:center;background:var(--surface);border:1px solid var(--border);border-radius:var(--r);padding:12px 20px}
+.pom-ci{display:flex;align-items:center;gap:6px;font-size:11.5px;font-weight:600;color:var(--text2)}
+.pom-ci input{width:44px;font-family:'Outfit',sans-serif;font-size:13px;font-weight:800;text-align:center;border:1.5px solid var(--border);border-radius:6px;padding:3px 4px;background:var(--surface);color:var(--text);outline:none}
+.pom-ci input:focus{border-color:var(--accent)}
+.pom-snd{display:flex;align-items:center;gap:6px;font-size:11.5px;color:var(--muted);cursor:pointer;user-select:none}
 </style>
 </head>
 <body>
@@ -264,6 +290,7 @@ h1,h2,h3,h4,h5,.tab-btn,button.btn-add,button.btn-sm,.section-title,.week-btn,.v
   <button class="tab-btn" onclick="st(this,'horario')">🗓️ Horário</button>
   <button class="tab-btn" onclick="st(this,'provas')">🎯 Provas &amp; IA</button>
   <button class="tab-btn" onclick="st(this,'tempo')">⏱️ Tempo</button>
+  <button class="tab-btn" onclick="st(this,'pomodoro')">🍅 Pomodoro</button>
 </nav>
  
 <div class="content">
@@ -333,6 +360,45 @@ h1,h2,h3,h4,h5,.tab-btn,button.btn-add,button.btn-sm,.section-title,.week-btn,.v
     <table class="ttable"><thead><tr><th>Data</th><th>Disciplina</th><th>Assunto</th><th>Horas</th><th style="text-align:center">Questões</th><th style="text-align:center">Erros</th><th>% Acertos</th><th></th></tr></thead><tbody id="tbody"></tbody></table>
   </div>
   <div id="tempty" style="text-align:center;color:var(--muted);padding:38px">Nenhum registro ainda. Adicione acima.</div>
+</div>
+ 
+<div id="tp-pomodoro" class="panel">
+  <div class="section-title">Pomodoro Timer</div>
+  <div class="section-sub">Técnica Pomodoro · Foco total com pausas programadas</div>
+  <div class="pom-wrap">
+    <div class="pom-modes">
+      <button class="pom-mode pm-focus active" id="pm0" onclick="pomMode(0)">🍅 Foco</button>
+      <button class="pom-mode pm-short" id="pm1" onclick="pomMode(1)">☕ Pausa Curta</button>
+      <button class="pom-mode pm-long" id="pm2" onclick="pomMode(2)">🌿 Pausa Longa</button>
+    </div>
+    <div class="pom-ring-wrap">
+      <svg width="220" height="220" viewBox="0 0 220 220">
+        <circle cx="110" cy="110" r="96" fill="none" stroke="var(--surface3)" stroke-width="10"/>
+        <circle id="pomArc" cx="110" cy="110" r="96" fill="none" stroke="#E84393" stroke-width="10"
+          stroke-linecap="round" stroke-dasharray="603.19" stroke-dashoffset="0"
+          style="transition:stroke-dashoffset .95s linear,stroke .3s"/>
+      </svg>
+      <div class="pom-time">
+        <div class="pom-digits" id="pomDigits">25:00</div>
+        <div class="pom-lbl" id="pomLbl">Foco</div>
+      </div>
+    </div>
+    <div class="pom-btns">
+      <button class="pom-start" id="pomBtn" onclick="pomToggle()">▶ Iniciar</button>
+      <button class="pom-reset" onclick="pomReset()">↺ Resetar</button>
+    </div>
+    <div class="pom-stats">
+      <div class="pom-sc"><div class="pom-sv" id="pomSessN">0</div><div class="pom-sl">Sessões hoje</div></div>
+      <div class="pom-sc"><div class="pom-sv" id="pomMinN">0</div><div class="pom-sl">Min. focados</div></div>
+      <div class="pom-sc"><div class="pom-sv" id="pomStrkN">0</div><div class="pom-sl">Sequência 🔥</div></div>
+    </div>
+    <div class="pom-cfg">
+      <div class="pom-ci">🍅 Foco <input type="number" id="cfgF" value="25" min="1" max="99" onchange="pomCfg()"> min</div>
+      <div class="pom-ci">☕ Pausa curta <input type="number" id="cfgS" value="5" min="1" max="60" onchange="pomCfg()"> min</div>
+      <div class="pom-ci">🌿 Pausa longa <input type="number" id="cfgL" value="15" min="1" max="60" onchange="pomCfg()"> min</div>
+      <label class="pom-snd"><input type="checkbox" id="pomSnd" checked> 🔔 Som</label>
+    </div>
+  </div>
 </div>
  
 </div>
@@ -441,14 +507,15 @@ function toggleDark(){const dark=document.documentElement.getAttribute('data-the
 function loadTheme(){document.documentElement.setAttribute('data-theme',localStorage.getItem('bsi3_theme')||'light');}
  
 function updCD(){
-  if(!examDate){['cdD','cdH','cdM','cdS'].forEach(id=>document.getElementById(id).textContent='—');return;}
-  const diff=examDate-new Date();
-  if(diff<=0){['cdD','cdH','cdM','cdS'].forEach(id=>document.getElementById(id).textContent='0');return;}
-  document.getElementById('cdD').textContent=Math.floor(diff/86400000);
-  document.getElementById('cdH').textContent=String(Math.floor((diff%86400000)/3600000)).padStart(2,'0');
-  document.getElementById('cdM').textContent=String(Math.floor((diff%3600000)/60000)).padStart(2,'0');
-  document.getElementById('cdS').textContent=String(Math.floor((diff%60000)/1000)).padStart(2,'0');
-  document.getElementById('examDisp').textContent='· '+examDate.toLocaleDateString('pt-BR');
+  const diff=examDate?examDate-new Date():null;
+  const get=id=>{const el=document.getElementById(id);return el;};
+  if(!examDate||!get('cdD')){['cdD','cdH','cdM','cdS'].forEach(id=>{const el=get(id);if(el)el.textContent='—';});return;}
+  if(diff<=0){['cdD','cdH','cdM','cdS'].forEach(id=>{const el=get(id);if(el)el.textContent='0';});return;}
+  if(get('cdD'))get('cdD').textContent=Math.floor(diff/86400000);
+  if(get('cdH'))get('cdH').textContent=String(Math.floor((diff%86400000)/3600000)).padStart(2,'0');
+  if(get('cdM'))get('cdM').textContent=String(Math.floor((diff%3600000)/60000)).padStart(2,'0');
+  if(get('cdS'))get('cdS').textContent=String(Math.floor((diff%60000)/1000)).padStart(2,'0');
+  const ed=get('examDisp');if(ed)ed.textContent='· '+examDate.toLocaleDateString('pt-BR');
 }
 function saveED(){const v=document.getElementById('edInput').value;if(v){examDate=new Date(v+'T08:00:00');save();updCD();}cm('mExamDate');}
  
@@ -456,7 +523,7 @@ function st(btn,tab){
   document.querySelectorAll('.panel').forEach(p=>p.classList.remove('active'));
   document.querySelectorAll('.tab-btn').forEach(b=>b.classList.remove('active'));
   document.getElementById('tp-'+tab).classList.add('active');btn.classList.add('active');
-  ({planejamento:rPlan,ciclos:rCiclos,materias:rMat,horario:rSched,provas:rExams,tempo:rTempo}[tab]||rPlan)();
+  ({planejamento:rPlan,ciclos:rCiclos,materias:rMat,horario:rSched,provas:rExams,tempo:rTempo,pomodoro:rPomodoro}[tab]||rPlan)();
 }
 function sv(v){cv=v;document.getElementById('vd').classList.toggle('active',v==='dias');document.getElementById('vk').classList.toggle('active',v==='kanban');document.getElementById('dview').style.display=v==='dias'?'':'none';document.getElementById('kview').style.display=v==='kanban'?'':'none';v==='kanban'?rKanban():rDays();}
  
@@ -623,6 +690,126 @@ function popWeekSel(){document.getElementById('fWeek').innerHTML=WL.map((w,i)=>`
 function om(id){document.getElementById(id).classList.add('open');}
 function cm(id){document.getElementById(id).classList.remove('open');}
 document.querySelectorAll('.moverlay').forEach(o=>o.addEventListener('click',e=>{if(e.target===o)o.classList.remove('open');}));
+ 
+// POMODORO
+const POM_CIRC=603.19;
+const POM_COLORS=['#E84393','#059669','#0891B2'];
+const POM_LABELS=['Foco','Pausa Curta','Pausa Longa'];
+let pomM=0,pomRunning=false,pomRemain=25*60,pomTotal=25*60,pomIv=null;
+let pomDurs=[25,5,15],pomSessToday=0,pomMinFocus=0,pomStreak=0,pomLastDate='';
+ 
+function pomLoadStats(){
+  try{
+    const s=JSON.parse(localStorage.getItem('bsi_pom')||'{}');
+    const today=new Date().toISOString().slice(0,10);
+    if(s.date===today){pomSessToday=s.sess||0;pomMinFocus=s.min||0;}
+    pomStreak=s.streak||0;pomLastDate=s.lastDate||'';
+    if(s.durs)pomDurs=s.durs;
+  }catch{}
+}
+function pomSaveStats(){
+  const today=new Date().toISOString().slice(0,10);
+  localStorage.setItem('bsi_pom',JSON.stringify({date:today,sess:pomSessToday,min:pomMinFocus,streak:pomStreak,lastDate:pomLastDate,durs:pomDurs}));
+}
+function pomMode(m){
+  pomReset();
+  pomM=m;
+  [0,1,2].forEach(i=>document.getElementById('pm'+i).classList.toggle('active',i===m));
+  pomTotal=pomDurs[m]*60;
+  pomRemain=pomTotal;
+  document.getElementById('pomArc').style.stroke=POM_COLORS[m];
+  document.getElementById('pomLbl').textContent=POM_LABELS[m];
+  pomUpdUI();
+}
+function pomToggle(){
+  if(pomRunning){
+    clearInterval(pomIv);pomIv=null;pomRunning=false;
+    document.getElementById('pomBtn').textContent='▶ Continuar';
+  }else{
+    pomRunning=true;
+    document.getElementById('pomBtn').textContent='⏸ Pausar';
+    pomIv=setInterval(pomTick,1000);
+  }
+}
+function pomTick(){
+  if(pomRemain<=0){pomDone();return;}
+  pomRemain--;
+  pomUpdUI();
+}
+function pomDone(){
+  clearInterval(pomIv);pomIv=null;pomRunning=false;
+  const btn=document.getElementById('pomBtn');
+  if(btn)btn.textContent='▶ Iniciar';
+  if(pomM===0){
+    pomSessToday++;
+    pomMinFocus+=pomDurs[0];
+    const today=new Date().toISOString().slice(0,10);
+    const yesterday=new Date(Date.now()-86400000).toISOString().slice(0,10);
+    if(pomLastDate!==today){
+      pomStreak=pomLastDate===yesterday?pomStreak+1:1;
+      pomLastDate=today;
+    }
+    pomSaveStats();
+    pomUpdStats();
+  }
+  if(document.getElementById('pomSnd')?.checked)pomBeep();
+  pomRemain=0;pomUpdUI();
+  document.title='Planner de Estudos — BSI IF Sudeste MG';
+}
+function pomReset(){
+  clearInterval(pomIv);pomIv=null;pomRunning=false;
+  pomRemain=pomTotal;
+  const btn=document.getElementById('pomBtn');
+  if(btn)btn.textContent='▶ Iniciar';
+  pomUpdUI();
+  document.title='Planner de Estudos — BSI IF Sudeste MG';
+}
+function pomCfg(){
+  pomDurs=[
+    Math.max(1,parseInt(document.getElementById('cfgF').value)||25),
+    Math.max(1,parseInt(document.getElementById('cfgS').value)||5),
+    Math.max(1,parseInt(document.getElementById('cfgL').value)||15)
+  ];
+  pomSaveStats();
+  pomMode(pomM);
+}
+function pomUpdUI(){
+  const mm=String(Math.floor(pomRemain/60)).padStart(2,'0');
+  const ss=String(pomRemain%60).padStart(2,'0');
+  const dEl=document.getElementById('pomDigits');
+  if(dEl)dEl.textContent=mm+':'+ss;
+  const arc=document.getElementById('pomArc');
+  if(arc)arc.style.strokeDashoffset=POM_CIRC*(1-pomRemain/pomTotal);
+  if(pomRunning)document.title=`${mm}:${ss} — EstudoBSI`;
+}
+function pomUpdStats(){
+  const s=document.getElementById('pomSessN'),m=document.getElementById('pomMinN'),st=document.getElementById('pomStrkN');
+  if(s)s.textContent=pomSessToday;
+  if(m)m.textContent=pomMinFocus;
+  if(st)st.textContent=pomStreak;
+}
+function pomBeep(){
+  try{
+    const ctx=new(window.AudioContext||window.webkitAudioContext)();
+    const play=(freq,start,dur)=>{
+      const o=ctx.createOscillator(),g=ctx.createGain();
+      o.connect(g);g.connect(ctx.destination);
+      o.frequency.value=freq;o.type='sine';
+      g.gain.setValueAtTime(0,ctx.currentTime+start);
+      g.gain.linearRampToValueAtTime(0.35,ctx.currentTime+start+0.01);
+      g.gain.exponentialRampToValueAtTime(0.001,ctx.currentTime+start+dur);
+      o.start(ctx.currentTime+start);o.stop(ctx.currentTime+start+dur+0.05);
+    };
+    play(880,0,.18);play(1100,.22,.18);play(1320,.44,.35);
+  }catch{}
+}
+function rPomodoro(){
+  pomLoadStats();
+  const cfgF=document.getElementById('cfgF');
+  if(cfgF){cfgF.value=pomDurs[0];document.getElementById('cfgS').value=pomDurs[1];document.getElementById('cfgL').value=pomDurs[2];}
+  pomUpdStats();
+  pomUpdUI();
+}
  
 function init(){
   loadTheme();loadState();rPlan();updCD();setInterval(updCD,1000);
